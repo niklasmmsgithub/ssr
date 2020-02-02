@@ -1,38 +1,5 @@
 import gql from "graphql-tag";
-import Link from "next/link";
-import { graphql } from "react-apollo";
-
-const RestaurantList = (
-  { data: { loading, error, restaurants }, search },
-  req
-) => {
-  if (error) return "Error loading restaurants";
-
-  if (restaurants && restaurants.length) {
-    //searchQuery
-    const searchQuery = restaurants;
-
-    if (searchQuery.length != 0) {
-      return (
-        <div>
-          <div className="h-100">
-            {searchQuery.map(res => (
-                <div key={res.id}>
-                    {res.name}
-                    <ul>
-                        {res.categories.map(c => <li key={c.id}>{c.name}</li>)}
-                    </ul>
-                </div>
-            ))}
-          </div>
-        </div>
-      );
-    } else {
-      return <h1>No Restaurants Found</h1>;
-    }
-  }
-  return <h1>Loading</h1>;
-};
+import { Query } from "react-apollo";
 
 const query = gql`
   {
@@ -48,16 +15,15 @@ const query = gql`
   }
 `;
 
-RestaurantList.getInitialProps = async ({ req }) => {
-  const res = await fetch("https://api.github.com/repos/zeit/next.js");
-  const json = await res.json();
-  return { stars: json.stargazers_count };
+const RestaurantList = ({ data, error }) => {
+  return (
+    <Query query={query}>            
+      {({data, error, loading}) => {
+        if(loading) return <p>Loading</p>
+        return data.restaurants.map(user => <div>{user.name}</div>);
+      }}
+    </Query>
+  );
 };
 
-// The `graphql` wrapper executes a GraphQL query and makes the results
-// available on the `data` prop of the wrapped component (RestaurantList)
-export default graphql(query, {
-  props: ({ data }) => ({
-    data
-  })
-})(RestaurantList);
+export default RestaurantList;
